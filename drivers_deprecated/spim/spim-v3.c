@@ -40,22 +40,9 @@ static int __rt_spi_get_div(int spi_freq)
 {
   int periph_freq = __rt_freq_periph_get();
 
-  if (spi_freq >= periph_freq)
-  {
-    return 0;
-  }
-  else
-  {
-    // Round-up the divider to obtain an SPI frequency which is below the maximum
-    int div = (__rt_freq_periph_get() + spi_freq - 1)/ spi_freq;
+  if (spi_freq >= periph_freq) return 0;
 
-    // The SPIM always divide by 2 once we activate the divider, thus increase by 1
-    // in case it is even to not go avove the max frequency.
-    if (div & 1) div += 1;
-    div >>= 1;
-
-    return div;
-  }
+  return ((periph_freq + spi_freq) / spi_freq - 1) >> 1;
 }
 
 static inline int __rt_spim_get_byte_align(int wordsize, int big_endian)
