@@ -104,11 +104,7 @@ void rt_event_push_delayed(rt_event_t *event, int us)
     uint32_t timer = timer_count_get(timer_base_fc(0, 1)) + ticks;
     timer_cmp_set(timer_base_fc(0, 1), timer);
 
-    timer_conf_set(timer_base_fc(0, 1),
-      TIMER_CFG_LO_ENABLE(1) |
-      TIMER_CFG_LO_IRQEN(1)  |
-      TIMER_CFG_LO_CCFG(1)
-    );
+    timer_conf_set(timer_base_fc(0, 1), TIMER_CFG_LO_ENABLE(1) | TIMER_CFG_LO_IRQEN(1));
   }
 
   rt_irq_restore(irq);
@@ -136,11 +132,7 @@ RT_FC_BOOT_CODE void __attribute__((constructor)) __rt_time_init()
   // Configure the FC timer in 64 bits mode as it will be used as a common
   // timer for all virtual timers.
   // We also use the ref clock to make the frequency stable.
-  timer_conf_set(timer_base_fc(0, 1),
-    TIMER_CFG_LO_ENABLE(1) |
-    TIMER_CFG_LO_RESET(1)  |
-    TIMER_CFG_LO_CCFG(1)
-  );
+  timer_conf_set(timer_base_fc(0, 1), TIMER_CFG_LO_ENABLE(1) | TIMER_CFG_LO_RESET(1));
 
 #if defined(ARCHI_HAS_FC)
   rt_irq_set_handler(ARCHI_FC_EVT_TIMER0_HI, __rt_timer_handler);
