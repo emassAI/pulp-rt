@@ -230,6 +230,16 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
 
   cmd->cmd[0] = handle->cfg;
   cmd->cmd[1] = SPI_CMD_SOT(handle->cs);
+  /*
+    Not documented in datasheet 
+     SPI_CMD_TX_DATA(words, wordstrans, bitsword, qpi, lsbfirst)
+       SPI_CMD_TX_DATA_ID << 28 | qpi << 27 | lsbfirst << 26 | wordstrans << 21 | (bitsword - 1) << 16 | (words-1)
+        words: number of 32-bit word
+        wordstrans: 0 = 1 bit, 1 = 2 bits, 2 = 4 bits
+        bitsword - 1 = 32 - 1 (0x11111)
+        qpi: 0 = spi, 1 = qspi
+        lsbfirst: 0 = MSB_FIRST, 1 = LSB_FIRST
+  */
   cmd->cmd[2] = SPI_CMD_TX_DATA(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, qspi, SPI_CMD_MSB_FIRST);
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP);
 
