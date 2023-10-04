@@ -103,7 +103,7 @@ void rt_i2c_write_common(rt_i2c_t *dev_i2c, unsigned char *data, int length, int
   udma_cmd[seq_index++] = I2C_CMD_WR;
 
   copy->cfg = UDMA_CHANNEL_CFG_EN;
-  copy->addr = (int)data;
+  copy->addr = (unsigned int) &data[0];
   copy->u.raw.val[0] = length;
   copy->u.raw.val[1] = next_step;
 
