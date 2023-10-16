@@ -38,13 +38,7 @@ static inline int __rt_i2c_id(int periph_id)
 
 static int __rt_i2c_get_div(int i2c_freq)
 {
-    // Round-up the divider to obtain an SPI frequency which is below the maximum
-  int div = (__rt_freq_periph_get() + i2c_freq - 1)/i2c_freq;
-    // The SPIM always divide by 2 once we activate the divider, thus increase by 1
-    // in case it is even to not go avove the max frequency.
-  if (div & 1) div += 1;
-  div >>= 1;
-  return div;
+  return ((__rt_freq_periph_get() + i2c_freq)/i2c_freq + 1) >> 2;
 }
 
 
@@ -103,7 +97,7 @@ void rt_i2c_write_common(rt_i2c_t *dev_i2c, unsigned char *data, int length, int
   udma_cmd[seq_index++] = I2C_CMD_WR;
 
   copy->cfg = UDMA_CHANNEL_CFG_EN;
-  copy->addr = (int)data;
+  copy->addr = (unsigned int) &data[0];
   copy->u.raw.val[0] = length;
   copy->u.raw.val[1] = next_step;
 
@@ -202,8 +196,8 @@ rt_i2c_t *rt_i2c_open(char *dev_name, rt_i2c_conf_t *i2c_conf, rt_event_t *event
   i2c->div = __rt_i2c_get_div(i2c->max_baudrate);
 
   plp_udma_cg_set(plp_udma_cg_get() | (1<<channel));
-  soc_eu_fcEventMask_setEvent(channel*2);
-  soc_eu_fcEventMask_setEvent(channel*2 + 1);
+  soc_eu_fcEventMask_setEvent(UDMA_EVENT_ID(channel));
+  soc_eu_fcEventMask_setEvent(UDMA_EVENT_ID(channel) + 1);
 
   rt_irq_restore(irq);
 
