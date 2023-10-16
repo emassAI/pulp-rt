@@ -107,7 +107,8 @@ void rt_event_push_delayed(rt_event_t *event, int us)
     timer_conf_set(timer_base_fc(0, 1),
       TIMER_CFG_LO_ENABLE(1) |
       TIMER_CFG_LO_IRQEN(1)  |
-      TIMER_CFG_LO_CCFG(1)
+      TIMER_CFG_LO_PEN(1)    |
+      TIMER_CFG_LO_PVAL(100)
     );
   }
 
@@ -139,7 +140,8 @@ RT_FC_BOOT_CODE void __attribute__((constructor)) __rt_time_init()
   timer_conf_set(timer_base_fc(0, 1),
     TIMER_CFG_LO_ENABLE(1) |
     TIMER_CFG_LO_RESET(1)  |
-    TIMER_CFG_LO_CCFG(1)
+    TIMER_CFG_LO_PEN(1)    |
+    TIMER_CFG_LO_PVAL(100)
   );
 
 #if defined(ARCHI_HAS_FC)
