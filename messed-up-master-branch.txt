@@ -69,14 +69,6 @@ Steps 1-6 were partially done with some errors and backtracking. This is the ful
 
 
 $ history
-    1  gla
-    2  git reset --hard
-    3  * | | commit 373aee4d67a60e8d4e78696fa2b44c9fc67fc6b9
-    4  | | | Author: e-tinkers <cheetah_henry@hotmail.com>
-    5  | | | Date:   Wed Oct 4 13:57:40 2023 +0800
-    6  | | |
-    7  ecsdotsdk ~/workspace/pulp-rt-patch/pulp-rt [emassAI {emass-github/emassAI}|â    8  $ gla
-    9  gla
    10  git reset --hard 50ee27a9804459c8c3ebcf6c50fcd042ee358700
    11  git checkout master
    12  gla
@@ -110,8 +102,8 @@ $ history
    40  gla
    41  git checkout master
    42  gla
-   43  history
-   44  git reset --hard 50ee27a9804459c8c3ebcf6c50fcd042ee358700
+   43  history 
+   44  git reset --hard 50ee27a9804459c8c3ebcf6c50fcd042ee358700 
    45  gla
    46  git push --force-with-lease
    47  gla
@@ -130,7 +122,7 @@ $ history
    60  gla
    61  git checkout emassAI
    62  ll
-   63  less messed-up-master-branch.txt
+   63  less messed-up-master-branch.txt 
    64  gla
    65  git branch -avv
    66  gla
@@ -162,6 +154,43 @@ $ history
    92  git status
    93  gla
    94  ll
-   95  ne messed-up-master-branch.txt
-   96  history
+   95  ne messed-up-master-branch.txt 
+   96  history 
+   97  ne messed-up-master-branch.txt 
+   98  ll
+   99  gsu
+  100  git commit messed-up-master-branch.txt 
+  101  ll
+  102  cd ..
+  103  ll
+  104  cd pulp-
+  105  ll
+  106  mkdir test2
+  107  cd test2/
+  108  ll
+  109  ../clone-github-emassAI-pulp-rt_setup-extra-remotes 
+  110  ll
+  111  cd pulp-rt/
+  112  gla
+  113  cat ../clone-github-emassAI-pulp-rt_setup-extra-remotes 
+  114  cd ..
+  115  cat ../clone-github-emassAI-pulp-rt_setup-extra-remotes 
+  116  cd pulp-rt/
+  117  l
+  118  gal
+  119  gla
+  120  history 
 
+## move 'master' to match upstream
+
+  121  git reset --hard 5051aa598fc85ed02510955c686bef34c299dd43
+  122  gla
+  123  history 
+  124  gla
+  125  git push --force-with-lease sergio-ssh-office-mint
+  126  git push --force-with-lease origin-local
+  127  git push --force-with-lease emass-github
+  128  gla
+  129  history 
+  130  ll
+  131  history > history_to_append.txt
