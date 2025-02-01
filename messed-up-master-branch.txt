@@ -1,0 +1,67 @@
+
+pulp-rt messed-up master branch
+-------------------------------
+
+The pulp-rt private fork in the GitHub emassAI has a messed-up 'master' branch.
+
+The 'master' branch is supposed to be used only to track the upstream
+[pulpissimo/pulp-rt] 'master', to fetch/pull from it, and them merge the new
+commits into the private 'emassAI' branch to stay uo-to-date.
+
+But in this repository, the 'emassAI' branch has been merged into 'master'' at
+commit 'c2d08a', clobbering any update from upstream.
+
+Moreover, a lone commit 'cd8996' with 'fix i2c communication issue' (some of
+which as also found in branch emassAI), it is placed in a oddily named branch
+'5f5d8ee'.
+
+To fix these issues, we shall:
+
+1) create a new, aptly named branch 'fix-i2c-issues' at cd8996
+
+2) merge 'fix-i2c-issues' into 'emassAI'
+
+3) in pulp-sdk/versions.cfg for pulp-rt, set to use the 'emassAI' branch in
+place of the hardcoded commit '50ee27a9804459c8c3ebcf6c50fcd042ee358700',
+
+4) off the 'emassAI' create an ongoing development branch, e.g., 'emass-dev'
+
+5) destroy commit 'c2d08a'
+
+6) keep merging into 'emassAI' upstream updates from 'master' and completed developments from 'emass-dev' and other branches.
+
+
+
+* commit cd8996e33f78cdc5db03dc17a644f21d10b12420 (sergio-ssh-office-mint/fix-i2c-issues, origin-local/fix-i2c-issues, emass-github/fix-i2c-issues, emass-github/5f5d8ee)
+| Author: e-tinkers <cheetah_henry@hotmail.com>
+| Date:   Mon Oct 16 15:38:59 2023 +0800
+|
+|     fix i2c communication issue
+|
+| *   commit c2d08ac5d1d48b93a68118e515fb500b2395adbc (sergio-ssh-office-mint/master, origin-local/master, emass-github/master, emass-github/HEAD, master)
+| |\  Merge: 5051aa5 50ee27a
+| | | Author: e-tinkers <cheetah_henry@hotmail.com>
+| | | Date:   Mon Oct 16 15:04:27 2023 +0800
+| | |
+| | |     Merge branch 'emassAI'
+| | |
+| | * commit 50ee27a9804459c8c3ebcf6c50fcd042ee358700 (HEAD -> emassAI, sergio-ssh-office-mint/emassAI, origin-local/emassAI, emass-github/emassAI)
+| | | Author: e-tinkers <cheetah_henry@hotmail.com>
+| | | Date:   Wed Oct 4 14:37:19 2023 +0800
+| | |
+| | |     fix printf() handling on unsigned long long or uint64_t data type
+| | |
+| | * commit 08a730fead60772eb1319900439dc8314c05a98e
+| | | Author: e-tinkers <cheetah_henry@hotmail.com>
+| | | Date:   Wed Oct 4 14:17:38 2023 +0800
+| | |
+| | |     fix i2c clock calculation so that when freq=100000, no need to set baudrate to 200000
+| | |
+| | * commit 7ec84fc58429b50414a3dccdd19968f521b08557
+| | | Author: e-tinkers <cheetah_henry@hotmail.com>
+| | | Date:   Wed Oct 4 14:14:29 2023 +0800
+| | |
+| | |     enable PLL clock and add PVAL value
+| | |
+
+
