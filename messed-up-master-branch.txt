@@ -65,3 +65,103 @@ place of the hardcoded commit '50ee27a9804459c8c3ebcf6c50fcd042ee358700',
 | | |
 
 
+Steps 1-6 were partially done with some errors and backtracking. This is the full history of commands issued:
+
+
+$ history
+    1  gla
+    2  git reset --hard
+    3  * | | commit 373aee4d67a60e8d4e78696fa2b44c9fc67fc6b9
+    4  | | | Author: e-tinkers <cheetah_henry@hotmail.com>
+    5  | | | Date:   Wed Oct 4 13:57:40 2023 +0800
+    6  | | |
+    7  ecsdotsdk ~/workspace/pulp-rt-patch/pulp-rt [emassAI {emass-github/emassAI}|â    8  $ gla
+    9  gla
+   10  git reset --hard 50ee27a9804459c8c3ebcf6c50fcd042ee358700
+   11  git checkout master
+   12  gla
+   13  git checkout emass-github emassAI
+   14  git checkout emass-github/emassAI
+   15  git checkout emass-github/emassAI emassAI
+   16  git checkout emassAI emass-github/emassAI
+   17  git checkout emassAI emass-github emassAI
+   18  gla
+   19  git checkout emassAI -u emass-github emassAI
+   20  git checkout emassAI -u emass-github/emassAI
+   21  history | grep "git checkout"
+   22  history | grep "git branch"
+   23  gla
+   24  git checkout -b emassAI --track emass-github/emassAI
+   25  git checkout emassAI --track emass-github/emassAI
+   26  gla
+   27  git log
+   28  history
+   29  git reset --hard 301d01a4f1720743ee676df7133553b07670fea1
+   30  gla
+   31  git reset --hard 301d01a4f1720743ee676df7133553b07670fea1
+   32  gla
+   33  git checkout emassAI --track emass-github/emassAI
+   34  git checkout -b emassAI --track emass-github/emassAI
+   35  git checkout --track emass-github/emassAI
+   36  git branch -avv
+   37  git branch emassAI
+   38  git checkout emassAI
+   39  git pull
+   40  gla
+   41  git checkout master
+   42  gla
+   43  history
+   44  git reset --hard 50ee27a9804459c8c3ebcf6c50fcd042ee358700
+   45  gla
+   46  git push --force-with-lease
+   47  gla
+   48  man git push --force-with-lease
+   49  git push --force-with-lease --all
+   50  gla
+   51  git push --force-with-lease sergio-ssh-office-mint
+   52  gla
+   53  git push --force-with-lease origin-local
+   54  git remote -v
+   55  git push --force-with-lease origin-local
+   56  gla
+   57  ll
+   58  git branch -avv
+   59  git remote -v
+   60  gla
+   61  git checkout emassAI
+   62  ll
+   63  less messed-up-master-branch.txt
+   64  gla
+   65  git branch -avv
+   66  gla
+   67  git log
+   68  git remote -v
+   69  git checkout master --track upstream-readonly/master
+   70  git checkout -b master --track upstream-readonly/master
+   71  git branch -d master
+   72  g;a
+   73  gla
+   74  git checkout -b master --track upstream-readonly/master
+   75  gla
+   76  git branch -d sergio-ssh-office-mint/master
+   77  gla
+   78  git fetch --all
+   79  gla
+   80  git checkout master
+   81  gla
+   82  git log
+   83  glp
+   84  ll
+   85  gla
+   86  gsu
+   87  git status
+   88  gla
+   89  git checkout emassAI\
+   90  git checkout emassAI
+   91  gla
+   92  git status
+   93  gla
+   94  ll
+   95  ne messed-up-master-branch.txt
+   96  history
+
