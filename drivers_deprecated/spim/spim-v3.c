@@ -325,7 +325,7 @@ void rt_spim_transfer_async(rt_spim_t *handle, void *tx_data, void *rx_data, siz
   int cmd_base = periph_base + ARCHI_SPIM_CMD_OFFSET;
   int rx_channel_base = periph_base + UDMA_CHANNEL_RX_OFFSET;
   int tx_channel_base = periph_base + UDMA_CHANNEL_TX_OFFSET;
-  int buffer_size = len/8;
+  int buffer_size = len/8; // from bits to bytes
   rt_periph_copy_t *copy = &event->implem.copy;
   rt_spim_cmd_t *cmd = (rt_spim_cmd_t *)copy->periph_data;
   rt_periph_spim_t *periph = &__rt_spim_periph[spim_id];
@@ -338,12 +338,14 @@ void rt_spim_transfer_async(rt_spim_t *handle, void *tx_data, void *rx_data, siz
 
   cmd->cmd[0] = handle->cfg;
   cmd->cmd[1] = SPI_CMD_SOT(handle->cs);
-  cmd->cmd[2] = SPI_CMD_FUL(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, SPI_CMD_MSB_FIRST);
+  // cmd->cmd[2] = SPI_CMD_FUL(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, SPI_CMD_MSB_FIRST);
+  cmd->cmd[2] = SPI_CMD_FUL(len/8, SPI_CMD_1_WORD_PER_TRANSF, 8, SPI_CMD_MSB_FIRST);
   cmd->cmd[3] = SPI_CMD_EOT(1, mode == RT_SPIM_CS_KEEP);
 
   if (__rt_spim_periph_push(periph, copy))
   {
-    int cfg = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;
+    // int cfg = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;
+    int cfg = UDMA_CHANNEL_CFG_SIZE_8 | UDMA_CHANNEL_CFG_EN;
     plp_udma_enqueue(cmd_base, (int)cmd, 4*4, cfg);
     plp_udma_enqueue(rx_channel_base, (int)rx_data, buffer_size, cfg);
     plp_udma_enqueue(tx_channel_base, (int)tx_data, buffer_size, cfg);
