@@ -219,13 +219,22 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
   cmd->cmd[1] = SPI_CMD_SOT(handle->cs); // which CS pin shall we use, #0 or #1? (for 2 peripherals)
 
   /*
-    Not documented in datasheet 
-     SPI_CMD_TX_DATA(words, wordstrans, bitsword, qpi, lsbfirst)
-       SPI_CMD_TX_DATA_ID << 28 | qpi << 27 | lsbfirst << 26 | wordstrans << 21 | (bitsword - 1) << 16 | (words-1)
+	Not documented in datasheet 
+	
+	SPI_CMD_TX_DATA(words, wordspertrans, bitsperword, qpi, lsbfirst)
 
-        wordspertrans: 2 = 4_WORD_PER_TRANSF; 1 = 2_WORD_PER_TRANSF; 0 = 1_WORD_PER_TRANSF
+	SPI_CMD_TX_DATA_ID << 28 | 
+	qpi << 27 | 
+	lsbfirst << 26 | 
+	wordspertrans << 21 | 
+	(bitsperword - 1) << 16 | (words-1) // what is 'words'? CHECK!
 
-        bitsword: how many bits (+1) is a 'transmit word' over MOSI; 0x11111 = 31 (+1) = 32 bit word, 0x00111 = 7 (+1) = 8 bit word
+	wordspertrans: how many x-bit sized words are transmitted in a burst
+		4 = 4_WORD_PER_TRANSF; 1 = 2_WORD_PER_TRANSF; 0 = 1_WORD_PER_TRANSF
+
+	bitsperword: how many bits wide is a word transmitted over MOSI. In a 5-bit bitfield 
+		32 bit wide words are encoded as 0x11111 = 31 (+1) = 32;
+		 8 bit wide words are encoded as 0x00111 =  7 (+1) =  8;
 
         qpi: 0 = spi, 1 = qspi // use 1 bit or use quad-spi, but the MOSI lines are 3, not 4: CHECK!
 
@@ -233,7 +242,7 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
   */
 
   // cmd->cmd[2] = SPI_CMD_TX_DATA(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, qspi, SPI_CMD_MSB_FIRST);
-  cmd->cmd[2] = SPI_CMD_TX_DATA(len/8, SPI_CMD_1_WORD_PER_TRANSF, 7, qspi, SPI_CMD_MSB_FIRST);
+  cmd->cmd[2] = SPI_CMD_TX_DATA(len/8, SPI_CMD_1_WORD_PER_TRANSF, 8, qspi, SPI_CMD_MSB_FIRST);
 
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP);
 
