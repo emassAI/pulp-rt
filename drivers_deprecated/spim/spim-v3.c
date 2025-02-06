@@ -202,9 +202,9 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
   int spim_id = __rt_spim_id(handle->channel);
   int periph_id = handle->channel;
   int periph_base = hal_udma_periph_base(periph_id);
-  int cmd_base = periph_base + ARCHI_SPIM_CMD_OFFSET;
+  int cmd_base = periph_base + ARCHI_SPIM_CMD_OFFSET; // SPI commands: sequence of 32-bit microcode ops, fetched with DMA
   int channel_base = periph_base + UDMA_CHANNEL_TX_OFFSET;
-  int buffer_size = len/8;
+  int buffer_size = len/8; // transmit buffer lenght, convert from bits to # bytes
   rt_periph_copy_t *copy = &event->implem.copy;
   rt_spim_cmd_t *cmd = (rt_spim_cmd_t *)copy->periph_data;
   rt_periph_spim_t *periph = &__rt_spim_periph[spim_id];
@@ -216,23 +216,31 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
   copy->event = event;
 
   cmd->cmd[0] = handle->cfg;
-  cmd->cmd[1] = SPI_CMD_SOT(handle->cs);
+  cmd->cmd[1] = SPI_CMD_SOT(handle->cs); // which CS pin shall we use, #0 or #1? (for 2 peripherals)
+
   /*
     Not documented in datasheet 
      SPI_CMD_TX_DATA(words, wordstrans, bitsword, qpi, lsbfirst)
        SPI_CMD_TX_DATA_ID << 28 | qpi << 27 | lsbfirst << 26 | wordstrans << 21 | (bitsword - 1) << 16 | (words-1)
-        words: number of 32-bit word
-        wordstrans: 0 = 1 bit, 1 = 2 bits, 2 = 4 bits
-        bitsword - 1 = 32 - 1 (0x11111)
-        qpi: 0 = spi, 1 = qspi
+
+        wordspertrans: 2 = 4_WORD_PER_TRANSF; 1 = 2_WORD_PER_TRANSF; 0 = 1_WORD_PER_TRANSF
+
+        bitsword: how many bits (+1) is a 'transmit word' over MOSI; 0x11111 = 31 (+1) = 32 bit word, 0x00111 = 7 (+1) = 8 bit word
+
+        qpi: 0 = spi, 1 = qspi // use 1 bit or use quad-spi, but the MOSI lines are 3, not 4: CHECK!
+
         lsbfirst: 0 = MSB_FIRST, 1 = LSB_FIRST
   */
-  cmd->cmd[2] = SPI_CMD_TX_DATA(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, qspi, SPI_CMD_MSB_FIRST);
+
+  // cmd->cmd[2] = SPI_CMD_TX_DATA(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, qspi, SPI_CMD_MSB_FIRST);
+  cmd->cmd[2] = SPI_CMD_TX_DATA(len/8, SPI_CMD_1_WORD_PER_TRANSF, 7, qspi, SPI_CMD_MSB_FIRST);
+
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP);
 
   if (likely(__rt_spim_periph_push(periph, copy)))
   {
-    int cfg = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;
+    // int cfg = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;
+    int cfg = UDMA_CHANNEL_CFG_SIZE_8 | UDMA_CHANNEL_CFG_EN;
     plp_udma_enqueue(cmd_base, (int)cmd, 4*4, cfg);
     plp_udma_enqueue(channel_base, (int)data, buffer_size, cfg);
   }
@@ -322,7 +330,7 @@ void rt_spim_transfer_async(rt_spim_t *handle, void *tx_data, void *rx_data, siz
   int spim_id = __rt_spim_id(handle->channel);
   int periph_id = handle->channel;
   int periph_base = hal_udma_periph_base(periph_id);
-  int cmd_base = periph_base + ARCHI_SPIM_CMD_OFFSET;
+  int cmd_base = periph_base + ARCHI_SPIM_CMD_OFFSET; // SPI commands: sequence of 32-bit microcode ops, fetched with DMA
   int rx_channel_base = periph_base + UDMA_CHANNEL_RX_OFFSET;
   int tx_channel_base = periph_base + UDMA_CHANNEL_TX_OFFSET;
   int buffer_size = len/8; // from bits to bytes
@@ -338,14 +346,13 @@ void rt_spim_transfer_async(rt_spim_t *handle, void *tx_data, void *rx_data, siz
 
   cmd->cmd[0] = handle->cfg;
   cmd->cmd[1] = SPI_CMD_SOT(handle->cs);
-  // cmd->cmd[2] = SPI_CMD_FUL(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, SPI_CMD_MSB_FIRST);
-  cmd->cmd[2] = SPI_CMD_FUL(len/8, SPI_CMD_1_WORD_PER_TRANSF, 8, SPI_CMD_MSB_FIRST);
+  cmd->cmd[2] = SPI_CMD_FUL(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, SPI_CMD_MSB_FIRST);
   cmd->cmd[3] = SPI_CMD_EOT(1, mode == RT_SPIM_CS_KEEP);
 
   if (__rt_spim_periph_push(periph, copy))
   {
-    // int cfg = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;
-    int cfg = UDMA_CHANNEL_CFG_SIZE_8 | UDMA_CHANNEL_CFG_EN;
+    int cfg = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;
+    // int cfg = UDMA_CHANNEL_CFG_SIZE_8 | UDMA_CHANNEL_CFG_EN; // right change in the wrong place: revert!
     plp_udma_enqueue(cmd_base, (int)cmd, 4*4, cfg);
     plp_udma_enqueue(rx_channel_base, (int)rx_data, buffer_size, cfg);
     plp_udma_enqueue(tx_channel_base, (int)tx_data, buffer_size, cfg);
