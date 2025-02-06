@@ -219,20 +219,20 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
   cmd->cmd[1] = SPI_CMD_SOT(handle->cs); // which CS pin shall we use, #0 or #1? (for 2 peripherals)
 
   /*
-	Not documented in datasheet 
-	
+	Not documented in datasheet
+
 	SPI_CMD_TX_DATA(words, wordspertrans, bitsperword, qpi, lsbfirst)
 
-	SPI_CMD_TX_DATA_ID << 28 | 
-	qpi << 27 | 
-	lsbfirst << 26 | 
-	wordspertrans << 21 | 
+	SPI_CMD_TX_DATA_ID << 28 |
+	qpi << 27 |
+	lsbfirst << 26 |
+	wordspertrans << 21 |
 	(bitsperword - 1) << 16 | (words-1) // what is 'words'? CHECK!
 
 	wordspertrans: how many x-bit sized words are transmitted in a burst
 		4 = 4_WORD_PER_TRANSF; 1 = 2_WORD_PER_TRANSF; 0 = 1_WORD_PER_TRANSF
 
-	bitsperword: how many bits wide is a word transmitted over MOSI. In a 5-bit bitfield 
+	bitsperword: how many bits wide is a word transmitted over MOSI. In a 5-bit bitfield
 		32 bit wide words are encoded as 0x11111 = 31 (+1) = 32;
 		 8 bit wide words are encoded as 0x00111 =  7 (+1) =  8;
 
