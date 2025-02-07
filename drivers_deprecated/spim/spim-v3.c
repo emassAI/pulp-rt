@@ -199,23 +199,32 @@ static inline __attribute__((always_inline)) int __rt_spim_periph_push(rt_periph
 
 void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
 {
-  int spim_id = __rt_spim_id(handle->channel);
-  int periph_id = handle->channel;
-  int periph_base = hal_udma_periph_base(periph_id);
+  int spim_id = __rt_spim_id(handle->channel); // spim_id computed / based on channel ?
+
+  int periph_id = handle->channel; // is the periph_id == channel (tx) ?
+
+  int periph_base = hal_udma_periph_base(periph_id); // udma peripheral base ?
+
   int cmd_base = periph_base + ARCHI_SPIM_CMD_OFFSET; // SPI commands: sequence of 32-bit microcode ops, fetched with DMA
-  int channel_base = periph_base + UDMA_CHANNEL_TX_OFFSET;
+
+  int channel_base = periph_base + UDMA_CHANNEL_TX_OFFSET; // tx channel base
+
   int buffer_size = len/8; // transmit buffer lenght, convert from bits to # bytes
-  rt_periph_copy_t *copy = &event->implem.copy;
-  rt_spim_cmd_t *cmd = (rt_spim_cmd_t *)copy->periph_data;
-  rt_periph_spim_t *periph = &__rt_spim_periph[spim_id];
+
+  rt_periph_copy_t *copy = &event->implem.copy; // copy the event ?
+
+  rt_spim_cmd_t *cmd = (rt_spim_cmd_t *)copy->periph_data; // copy the cmd, that is, the address of spi microcode array ?
+
+  rt_periph_spim_t *periph = &__rt_spim_periph[spim_id]; // which spi device are we using ?
 
   rt_trace(RT_TRACE_SPIM, "[SPIM] Send bitstream (handle: %p, buffer: %p, len: 0x%x, qspi: %d, keep_cs: %d, event: %p)\n", handle, data, len, qspi, cs_mode, event);
 
-  int irq = rt_irq_disable();
+  int irq = rt_irq_disable(); // critical section
 
-  copy->event = event;
+  copy->event = event; // copy event (again) ?
 
-  cmd->cmd[0] = handle->cfg;
+  cmd->cmd[0] = handle->cfg; // copy configuration for spi microcode 
+
   cmd->cmd[1] = SPI_CMD_SOT(handle->cs); // which CS pin shall we use, #0 or #1? (for 2 peripherals)
 
   /*
@@ -242,25 +251,32 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
   */
 
   // cmd->cmd[2] = SPI_CMD_TX_DATA(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, qspi, SPI_CMD_MSB_FIRST);
-  cmd->cmd[2] = SPI_CMD_TX_DATA(len/8, SPI_CMD_1_WORD_PER_TRANSF, 8, qspi, SPI_CMD_MSB_FIRST);
+  cmd->cmd[2] = SPI_CMD_TX_DATA(
+	len/8,                     \  // bytes to transfer;
+	SPI_CMD_1_WORD_PER_TRANSF, \  // how many words per transfer (1 word == '00')
+	8,                         \  // size of MOSI word (it will be stored as %00111 = 7)
+	qspi,                      \  // '0' == 1-bit spi; '1' == 3-4 bits qspi
+	SPI_CMD_MSB_FIRST          \  // which bit of each word shall spi send first: 0 = MSB_FIRST, 1 = LSB_FIRST
+	);
 
-  cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP);
+  cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP); // what is this command doing with CS?! CHECK!
 
   if (likely(__rt_spim_periph_push(periph, copy)))
   {
-    // int cfg = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;
-    int cfg = UDMA_CHANNEL_CFG_SIZE_8 | UDMA_CHANNEL_CFG_EN;
-    plp_udma_enqueue(cmd_base, (int)cmd, 4*4, cfg);
-    plp_udma_enqueue(channel_base, (int)data, buffer_size, cfg);
+    int cfg = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;    // 'cfg' = 32-bit + enable, same for cmd microcode and buffer data DMAs
+    // int cfg = UDMA_CHANNEL_CFG_SIZE_8 | UDMA_CHANNEL_CFG_EN;  // revert DMA size from 8 back to 32
+    plp_udma_enqueue(cmd_base, (int)cmd, 4*4, cfg);              // spi base, microcode commands array, size of array in bytes, 'cfg'.
+    plp_udma_enqueue(channel_base, (int)data, buffer_size, cfg); // channel_base: tx channel registers; data: pointer to tx buffer.
+								 // buffer_size: lenght of data to transfer in bytes, converted from bits.
   }
-  else
+  else // to be retrieved and submitted later?
   {
-    copy->u.raw.val[1] = periph_base;
-    copy->u.raw.val[2] = (int)cmd;
-    copy->u.raw.val[3] = 4*4;
-    copy->u.raw.val[4] = buffer_size;
-    copy->u.raw.val[5] = 0;
-    copy->u.raw.val[6] = (int)data;
+    copy->u.raw.val[1] = periph_base;	// the spi registers
+    copy->u.raw.val[2] = (int)cmd;	// where the microcode array is
+    copy->u.raw.val[3] = 4*4;		// size of spi cmq microcode: 4x 4-bytes words
+    copy->u.raw.val[4] = buffer_size;	// lenght of data to send in bytes
+    copy->u.raw.val[5] = 0;		// what is this 0 for?
+    copy->u.raw.val[6] = (int)data;	// data to send
   }
 
   rt_irq_restore(irq);
