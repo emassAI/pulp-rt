@@ -254,9 +254,9 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
   cmd->cmd[2] = SPI_CMD_TX_DATA(
 	len/8,                     /* bytes to transfer */ \
 	SPI_CMD_1_WORD_PER_TRANSF, /* how many words per transfer (1 word == '00') */ \
-	8,                         /* size of MOSI word (it will be stored as %00111 = 7) */ \
+	8,                         /* size of MOSI word: 8 is stored as %00111 = 7, 32 as %11111 = 31 */ \
 	qspi,                      /* '0' == 1-bit spi; '1' == 3-4 bits qspi */ \
-	SPI_CMD_MSB_FIRST          /* which bit of each word shall spi send first: 0 = MSB_FIRST, 1 = LSB_FIRST */ \
+	SPI_CMD_MSB_FIRST          /* first MOSI word bit to send: 0 = MSB_FIRST, 1 = LSB_FIRST */ \
 	);
 
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP); // what is this command doing with CS?! CHECK!
