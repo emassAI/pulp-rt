@@ -209,7 +209,7 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
 
   int channel_base = periph_base + UDMA_CHANNEL_TX_OFFSET; // tx channel base
 
-  int buffer_size = len/8; // transmit buffer lenght, convert from bits to # bytes
+  int buffer_size = len/8; // # of 8-bit bytes of data to send from 'data' buffer
 
   rt_periph_copy_t *copy = &event->implem.copy; // copy the event ?
 
@@ -252,7 +252,7 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
 
   // cmd->cmd[2] = SPI_CMD_TX_DATA(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, qspi, SPI_CMD_MSB_FIRST);
   cmd->cmd[2] = SPI_CMD_TX_DATA(
-	len/8,                     /* bytes to transfer */ \
+	len/8,                     /* 8-bit words to transfer */ \
 	SPI_CMD_1_WORD_PER_TRANSF, /* how many words per transfer (1 word == '00') */ \
 	8,                         /* size of MOSI word: 8 is stored as %00111 = 7, 32 as %11111 = 31 */ \
 	qspi,                      /* '0' == 1-bit spi; '1' == 3-4 bits qspi */ \
@@ -271,12 +271,12 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
   }
   else // to be retrieved and submitted later?
   {
-    copy->u.raw.val[1] = periph_base;	// the spi registers
+    copy->u.raw.val[1] = periph_base;	// the SPI registers
     copy->u.raw.val[2] = (int)cmd;	// where the microcode array is
-    copy->u.raw.val[3] = 4*4;		// size of spi cmq microcode: 4x 4-bytes words
-    copy->u.raw.val[4] = buffer_size;	// lenght of data to send in bytes
-    copy->u.raw.val[5] = 0;		// what is this 0 for?
-    copy->u.raw.val[6] = (int)data;	// data to send
+    copy->u.raw.val[3] = 4*4;		// size of SPI cmd array of microcode: 4x 4-bytes words
+    copy->u.raw.val[4] = buffer_size;	// how many 8-bit bytes of data shall SPI send
+    copy->u.raw.val[5] = 0;		// what is this 0 for? is the CS pin #?
+    copy->u.raw.val[6] = (int)data;	// prt to data to send
   }
 
   rt_irq_restore(irq);
