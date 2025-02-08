@@ -1,0 +1,32 @@
+debugging SPI
+-------------
+
+This version (commit) never returns from send. It is always stuck in __rt_wait_event():
+
+276	#define PCER_NB_EVENTS CSR_PCER_NB_EVENTS
+277	#define PCER_ALL_EVENTS_MASK CSR_PCER_ALL_EVENTS_MASK
+^C
+Program received signal SIGINT, Interrupt.
+__rt_event_execute (sched=<optimized out>, sched@entry=0x0, wait=wait@entry=0x1) at kernel/events.c:200
+200	      rt_irq_enable();
+Breakpoint 1 at 0x1c0089fa: file test.c, line 34.
+(gdb) continue
+Continuing.
+^C
+Program received signal SIGINT, Interrupt.
+__rt_event_execute (sched=<optimized out>, sched@entry=0x0, wait=wait@entry=0x1) at kernel/events.c:200
+200	      rt_irq_enable();
+(gdb) bt
+#0  __rt_event_execute (sched=<optimized out>, sched@entry=0x0, wait=wait@entry=0x1) at kernel/events.c:200
+#1  0x1c0099b2 in __rt_wait_event (event=event@entry=0x1c001398) at kernel/events.c:250
+#2  0x1c008e06 in __rt_wait_event_check (call_event=<optimized out>, event=0x0)
+    at /root/pulp-sdk/pkg/sdk/dev/install/include/rt/rt_event.h:351
+#3  __rt_spim_send (handle=handle@entry=0x1c001428, data=data@entry=0x1c010070, len=len@entry=0x20, qspi=qspi@entry=0x0,
+    cs_mode=cs_mode@entry=RT_SPIM_CS_NONE, event=event@entry=0x0) at drivers_deprecated/spim/spim-v3.c:293
+#4  0x1c008ae4 in rt_spim_send (event=0x0, mode=RT_SPIM_CS_NONE, len=0x20, data=0x1c010070, handle=0x1c001428)
+    at /root/pulp-sdk/pkg/sdk/dev/install/include/rt/rt_spim.h:343
+#5  main () at test.c:116
+
+---------------------------
+
+
