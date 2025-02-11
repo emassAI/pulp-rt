@@ -251,7 +251,7 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
                                    /* todo: set = conf->big_endian as requested by the caller */ \
 	);
 
-	// SPI_CMD_MSB_FIRST          /* first MOSI word bit to send: 0 = MSB_FIRST, 1 = LSB_FIRST */ \
+	// SPI_CMD_MSB_FIRST          /* first MOSI word bit to send: 0 = MSB_FIRST, 1 = LSB_FIRST */
 
 
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP); // what is this command doing with CS?! CHECK!
