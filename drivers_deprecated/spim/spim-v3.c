@@ -86,12 +86,12 @@ rt_spim_t *rt_spim_open(char *dev_name, rt_spim_conf_t *conf, rt_event_t *event)
 
   spim->channel = channel;
 
-  spim->wordsize = conf->wordsize; // default (below) is WORDSIZE_8 !
-  spim->big_endian = conf->big_endian; // default (below) is 0
-  spim->polarity = conf->polarity;
-  spim->phase = conf->phase;
-  spim->max_baudrate = conf->max_baudrate;
-  spim->cs = conf->cs;
+  spim->wordsize = conf->wordsize; // default (set below) is WORDSIZE_8 !
+  spim->big_endian = conf->big_endian; // default (set below) is 0
+  spim->polarity = conf->polarity;	// default (set below) is 0
+  spim->phase = conf->phase;		// default (set below) is 0
+  spim->max_baudrate = conf->max_baudrate; // default (set below) is 10000000, 10M
+  spim->cs = conf->cs; // default (set below) is -1
   spim->byte_align = __rt_spim_get_byte_align(conf->wordsize, conf->big_endian);
 
   int div = __rt_spi_get_div(spim->max_baudrate);
@@ -404,8 +404,8 @@ void rt_spim_transfer(rt_spim_t *handle, void *tx_data, void *rx_data, size_t le
 void rt_spim_conf_init(rt_spim_conf_t *conf)
 {
   conf->wordsize = RT_SPIM_WORDSIZE_8; // note: WORDSIZE_8? and how is this used for send/receive?
-  conf->big_endian = 0;
-  conf->max_baudrate = 10000000;
+  conf->big_endian = 0; // probably should be 1 ?
+  conf->max_baudrate = 10000000; // check this baudrate
   conf->cs_gpio = -1;
   conf->cs = -1;
   conf->id = -1;
