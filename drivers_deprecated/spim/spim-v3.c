@@ -255,7 +255,6 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
 
   if (likely(__rt_spim_periph_push(periph, copy)))
   {
-
     int cfgcmd = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;   // 'cfgcmd' = 32-bit + enable, for cmd microcode DMA.
     plp_udma_enqueue(cmd_base, (int)cmd, 4*4, cfgcmd);             // spi base, microcode commands array, size of array in bytes, 'cfgcmd'.
 
@@ -309,14 +308,17 @@ void __rt_spim_receive_async(rt_spim_t *handle, void *data, size_t len, int qspi
 
   cmd->cmd[0] = handle->cfg;
   cmd->cmd[1] = SPI_CMD_SOT(handle->cs);
-  cmd->cmd[2] = SPI_CMD_RX_DATA(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, qspi, SPI_CMD_MSB_FIRST);
+  // cmd->cmd[2] = SPI_CMD_RX_DATA(len/32, SPI_CMD_1_WORD_PER_TRANSF, 32, qspi, SPI_CMD_MSB_FIRST);
+  cmd->cmd[2] = SPI_CMD_RX_DATA(len/8, SPI_CMD_1_WORD_PER_TRANSF, 8, qspi, SPI_CMD_MSB_FIRST);
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP);
 
   if (__rt_spim_periph_push(periph, copy))
   {
-    int cfg = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;
-    plp_udma_enqueue(channel_base, (int)data, buffer_size, cfg);
-    plp_udma_enqueue(cmd_base, (int)cmd, 4*4, cfg);
+    int cfgrx = UDMA_CHANNEL_CFG_SIZE_8 | UDMA_CHANNEL_CFG_EN;     // 'cfgrx' = 8-bit 'MOSI words' + enable, for rx buffer data DMAs
+    int cfgcmd = UDMA_CHANNEL_CFG_SIZE_32 | UDMA_CHANNEL_CFG_EN;   // 'cfgcmd' = 32-bit + enable, for cmd microcode DMA.
+
+    plp_udma_enqueue(channel_base, (int)data, buffer_size, cfgrx);
+    plp_udma_enqueue(cmd_base, (int)cmd, 4*4, cfgcmd);
   }
   else
   {
