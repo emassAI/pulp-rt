@@ -217,7 +217,7 @@ void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len,
 
 }
 
-void __rt_spim_send_bits (rt_spim_t *handle, void *data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
+void __rt_spim_send_bits (rt_spim_t *handle, unsigned int data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
 {
   int irq = rt_irq_disable();
 
