@@ -1,4 +1,4 @@
-/*
+-/*
  * Copyright (C) 2018 ETH Zurich and University of Bologna
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -185,6 +185,24 @@ void rt_spim_close(rt_spim_t *handle, rt_event_t *event);
 static inline void rt_spim_control(rt_spim_t *handle, rt_spim_control_e cmd, uint32_t arg);
 
 
+/** \brief Enqueue a write bits to the SPI (from Chip to SPI device).
+ *
+ * This function can be used to send up to 16 bits to the SPI device.
+ * ??? The copy will make an asynchronous transfer between the SPI and one of the chip memory.
+ * ??? An event can be specified in order to be notified when the transfer is finished.
+ * This is using classic SPI transfer with MOSI and MISO lines.
+ * Note that the event attached to this call is triggered when the chip is ready to send another spi stream 
+ * not when the spi stream has been fully sent. There can be some buffering effects which
+ * make the chip send a few bits after the event is triggered.
+ *
+ * \param handle      The handle of the SPI device which was returned when the device was opened.
+ * \param data        The data value to send.
+ * \param len         The size in bits of the data to send.
+ * \param cs_mode     The mode for managing the chip select.
+ * \param event       The event used to notify the end of transfer. See the documentation of rt_event_t for more details.
+ */
+static inline void rt_spim_send_bits(rt_spim_t *handle, unsigned int data, size_t len, rt_spim_cs_e cs_mode, rt_event_t *event);
+
 
 /** \brief Enqueue a write copy to the SPI (from Chip to SPI device).
  *
@@ -333,6 +351,22 @@ static inline void rt_spim_control(rt_spim_t *handle, rt_spim_control_e cmd, uin
 }
 
 #else
+
+
+/*
+void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event);
+
+static inline void rt_spim_send_bits(rt_spim_t *handle, unsigned int data, size_t len, rt_spim_cs_e cs_mode, rt_event_t *event)
+{
+  __rt_spim_send(handle, data, len, 0, mode, event); // SPI 1 bit
+}
+
+static inline void rt_spim_send_bits_qspi(rt_spim_t *handle, unsigned int data, size_t len, rt_spim_cs_e cs_mode, rt_event_t *event)
+{
+  __rt_spim_send(handle, data, len, 1, mode, event); // SPI 4 bits
+}
+
+*/
 
 void __rt_spim_send(rt_spim_t *handle, void *data, size_t len, int qspi, rt_spim_cs_e mode, rt_event_t *event);
 

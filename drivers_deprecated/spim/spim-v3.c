@@ -197,6 +197,41 @@ static inline __attribute__((always_inline)) int __rt_spim_periph_push(rt_periph
   }
 }
 
+
+/*
+void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
+{
+
+  ~/pulp-sdk/pkg/sdk/dev/install/ws/include/archi/udma/spim/udma_spim_v3.h
+
+  SPI_CMD_SEND_BITS(data,bits,qpi) ( \
+	(SPI_CMD_SEND_CMD_ID<<SPI_CMD_ID_OFFSET)  | \
+	((qpi)<<SPI_CMD_SEND_CMD_QPI_OFFSET)       | \
+	(((bits)-1)<<SPI_CMD_SEND_CMD_SIZE_OFFSET) | \
+	(data&0xFFFF) \
+  ) 
+  SPI_CMD_SEND_CMD_ID : $2 // SPI OPCODE
+  qpi                 : 0 = spi, 1 = qspi // use 1 bit or use quad-spi
+  bits                : 1...16 bit
+  data                : value masked 16 bit
+
+}
+
+void __rt_spim_send_bits (rt_spim_t *handle, void *data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
+{
+  int irq = rt_irq_disable();
+
+  rt_event_t *call_event = __rt_wait_event_prepare(event);
+
+  __rt_spim_send_bits_async(handle, data, len, qspi, cs_mode, call_event);
+
+  __rt_wait_event_check(event, call_event);
+
+  rt_irq_restore(irq);
+}
+*/
+
+
 void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
 {
   int spim_id = __rt_spim_id(handle->channel); // spim_id computed / based on channel ?
