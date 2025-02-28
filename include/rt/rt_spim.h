@@ -353,16 +353,16 @@ static inline void rt_spim_control(rt_spim_t *handle, rt_spim_control_e cmd, uin
 #else
 
 
-void __rt_spim_send_bits(rt_spim_t *handle, unsigned int data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event);
+void __rt_spim_send_bits(rt_spim_t *handle, unsigned int data, size_t len, int qspi, rt_spim_cs_e mode, rt_event_t *event);
 
-static inline void rt_spim_send_bits(rt_spim_t *handle, unsigned int data, size_t len, rt_spim_cs_e cs_mode, rt_event_t *event)
+static inline void rt_spim_send_bits(rt_spim_t *handle, unsigned int data, size_t len, rt_spim_cs_e mode, rt_event_t *event)
 {
-  printf("rt_spim_send_bits():\ndata : %d\nlen : %d\n");	
+  printf("rt_spim_send_bits():\ndata : %d [ sizeof (data) = %d ]\nlen : %d\n", data, sizeof(data), len);
   __rt_spim_send_bits(handle, data, len, 0, mode, event); // SPI 1 bit
 }
 
 /*
-static inline void rt_spim_send_bits_qspi(rt_spim_t *handle, unsigned int data, size_t len, rt_spim_cs_e cs_mode, rt_event_t *event)
+static inline void rt_spim_send_bits_qspi(rt_spim_t *handle, unsigned int data, size_t len, rt_spim_cs_e mode, rt_event_t *event)
 {
   __rt_spim_send_bits(handle, data, len, 1, mode, event); // SPI 4 bits
 }
