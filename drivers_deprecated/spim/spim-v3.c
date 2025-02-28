@@ -198,10 +198,11 @@ static inline __attribute__((always_inline)) int __rt_spim_periph_push(rt_periph
 }
 
 
-/*
+// /*
 void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
 {
 
+/*
   ~/pulp-sdk/pkg/sdk/dev/install/ws/include/archi/udma/spim/udma_spim_v3.h
 
   SPI_CMD_SEND_BITS(data,bits,qpi) ( \
@@ -214,6 +215,9 @@ void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len,
   qpi                 : 0 = spi, 1 = qspi // use 1 bit or use quad-spi
   bits                : 1...16 bit
   data                : value masked 16 bit
+*/
+
+	printf("__rt_spim_send_bits_async():\ndata (TO MASK!): %d\nlen : %d\n");
 
 }
 
@@ -229,7 +233,7 @@ void __rt_spim_send_bits (rt_spim_t *handle, unsigned int data, size_t len, int 
 
   rt_irq_restore(irq);
 }
-*/
+// */
 
 
 void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
