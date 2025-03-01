@@ -197,23 +197,21 @@ static inline __attribute__((always_inline)) int __rt_spim_periph_push(rt_periph
   }
 }
 
-// #include <inttypes.h>
-
 void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
 {
-  int spim_id = __rt_spim_id(handle->channel); // spim_id computed / based on channel ?
-  int periph_id = handle->channel; // is the periph_id == channel (tx) ?
-  int periph_base = hal_udma_periph_base(periph_id); // udma peripheral base ?
-  int cmd_base = periph_base + ARCHI_SPIM_CMD_OFFSET; // SPI commands: sequence of 32-bit microcode ops, fetched with DMA
+  int spim_id = __rt_spim_id(handle->channel);  // spim_id computed / based on channel ?
+  int periph_id = handle->channel;  // is the periph_id == channel (tx) ?
+  int periph_base = hal_udma_periph_base(periph_id);  // udma peripheral base ?
+  int cmd_base = periph_base + ARCHI_SPIM_CMD_OFFSET;  // SPI commands: sequence of 32-bit microcode ops, fetched with DMA
 
 /* unused by SPI_CMD_SEND_BITS
   int channel_base = periph_base + UDMA_CHANNEL_TX_OFFSET; // tx channel base
   int buffer_size = len/8; // # of 8-bit bytes of data to send from 'data' buffer
 */
 
-  rt_periph_copy_t *copy = &event->implem.copy; // copy the event ?
-  rt_spim_cmd_t *cmd = (rt_spim_cmd_t *)copy->periph_data; // copy the cmd, that is, the address of spi microcode array ?
-  rt_periph_spim_t *periph = &__rt_spim_periph[spim_id]; // which spi device are we using ?
+  rt_periph_copy_t *copy = &event->implem.copy; // copy the event / peripheral ?
+  rt_spim_cmd_t *cmd = (rt_spim_cmd_t *)copy->periph_data; // retrieve / copy the cmd, that is, the address of spi microcode array ?
+  rt_periph_spim_t *periph = &__rt_spim_periph[spim_id]; // retrieve which spi device are we using ?
 
   rt_trace(RT_TRACE_SPIM, "[SPIM] Send bits (handle: %p, bits: %x, len: 0x%x, qspi: %d, keep_cs: %d, event: %p)\n", handle, data, len, qspi, cs_mode, event);
 
@@ -222,6 +220,7 @@ void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len,
   copy->event = event; // copy event (again) ?
 
   cmd->cmd[0] = handle->cfg;  // copy configuration for spi microcode; note, it also sets CLKDIV [0...7]
+
   cmd->cmd[1] = SPI_CMD_SOT(handle->cs); // copy configuration for spi microcode 
 
 /*
@@ -235,16 +234,16 @@ void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len,
 	(data&0xFFFF) \
   ) 
   SPI_CMD_SEND_CMD_ID : $2 // SPI OPCODE
-  qpi                 : 0 = spi, 1 = qspi // use 1 bit or use quad-spi
+  qpi                 : 0 = spi, 1 = qspi
   bits                : 1...16 bit
   data                : value masked 16 bit
 */
   printf("__rt_spim_send_bits_async():\ndata: %#010x\nlen : %d\n", data, len);
 
   cmd->cmd[2] = SPI_CMD_SEND_BITS(
-	(unsigned short int) (0x0000ffff & data), /* the data to send */ \
-	len,                       /* how many bits should be sent (1...16) */ \
-	qspi,                      /* '0' == 1-bit spi; '1' == 3-4 bits qspi */ \
+	(unsigned short int) (0x0000ffff & data),  /* the data to send */ \
+	len,  /* how many bits should be sent (1...16) */ \
+	qspi  /* '0' == 1-bit spi; '1' == 3-4 bits qspi */ \
 	);
 
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP); // what is this command doing with CS?! CHECK!
@@ -262,12 +261,14 @@ void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len,
   }
   else // to be retrieved and submitted later?
   {
-    copy->u.raw.val[1] = periph_base;	// the SPI registers
-    copy->u.raw.val[2] = (int)cmd;	// where the microcode array is
-    copy->u.raw.val[3] = 4*4;		// size of SPI cmd array of microcode: 4x 4-bytes words
-    copy->u.raw.val[4] = buffer_size;	// how many 8-bit bytes of data shall SPI send
-    copy->u.raw.val[5] = 0;		// what is this 0 for? is the CS pin #?
-    copy->u.raw.val[6] = (int)data;	// pointer to data to send
+    copy->u.raw.val[1] = periph_base;  // the SPI registers
+    copy->u.raw.val[2] = (int)cmd;     // where the microcode array is
+    copy->u.raw.val[3] = 4*4;          // size of SPI cmd array of microcode: 4x 4-bytes words
+
+    /* unused by SPI_CMD_SEND_BITS event? */
+    copy->u.raw.val[4] = 0; // buffer_size;	// how many 8-bit bytes of data shall SPI send
+    copy->u.raw.val[5] = 0; // what is this 0 for? is the CS pin #?
+    copy->u.raw.val[6] = 0; // (int)data; // pointer to data to send
   }
 
   rt_irq_restore(irq);
@@ -275,17 +276,11 @@ void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len,
 
 void __rt_spim_send_bits (rt_spim_t *handle, unsigned int data, size_t len, int qspi, rt_spim_cs_e cs_mode, rt_event_t *event)
 {
-/*
   int irq = rt_irq_disable();
-*/
-
-  rt_event_t *call_event = NULL; // __rt_wait_event_prepare(event);
+  rt_event_t *call_event = __rt_wait_event_prepare(event);
   __rt_spim_send_bits_async(handle, data, len, qspi, cs_mode, call_event);
-
-/*
   __rt_wait_event_check(event, call_event);
   rt_irq_restore(irq);
-*/
 }
 
 
