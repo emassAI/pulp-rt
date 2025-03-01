@@ -357,7 +357,7 @@ void __rt_spim_send_bits(rt_spim_t *handle, unsigned int data, size_t len, int q
 
 static inline void rt_spim_send_bits(rt_spim_t *handle, unsigned int data, size_t len, rt_spim_cs_e mode, rt_event_t *event)
 {
-  printf("rt_spim_send_bits():\ndata : %d [ sizeof (data) = %d ]\nlen : %d\n", data, sizeof(data), len);
+  // printf("rt_spim_send_bits():\ndata : %d [ sizeof (data) = %d ]\nlen : %d\n", data, sizeof(data), len);
   __rt_spim_send_bits(handle, data, len, 0, mode, event); // SPI 1 bit
 }
 
