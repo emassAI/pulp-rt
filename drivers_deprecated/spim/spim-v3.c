@@ -222,16 +222,15 @@ void __rt_spim_send_bits (rt_spim_t *handle, unsigned int data, size_t len, int 
 {
 /*
   int irq = rt_irq_disable();
-
-  rt_event_t *call_event = __rt_wait_event_prepare(event);
 */
+
+  rt_event_t *call_event = NULL; // __rt_wait_event_prepare(event);
   __rt_spim_send_bits_async(handle, data, len, qspi, cs_mode, call_event);
 
 /*
   __rt_wait_event_check(event, call_event);
-
   rt_irq_restore(irq);
-/*
+*/
 }
 
 
