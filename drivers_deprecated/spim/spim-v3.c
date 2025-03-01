@@ -238,13 +238,21 @@ void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len,
   bits                : 1...16 bit
   data                : value masked 16 bit
 */
-  printf("__rt_spim_send_bits_async():\ndata: %#010x\nlen : %d\n", data, len);
 
   cmd->cmd[2] = SPI_CMD_SEND_BITS(
 	(unsigned short int) (0x0000ffff & data),  /* the data to send */ \
 	len,  /* how many bits should be sent (1...16) */ \
 	qspi  /* '0' == 1-bit spi; '1' == 3-4 bits qspi */ \
 	);
+
+  printf("__rt_spim_send_bits_async():\ndata: %#010x\nlen : %d\nopcode : %#010x", data, len, cmd->cmd[2] );
+  /*
+   SPI_CMD_SEND_CMD_ID : $2      %0010
+   data : $0044 = %0000 0000 0100 0100
+   bits :   $08 =                %1000
+   qspi :    $0 =                   %0
+   opcode : % .... .... .... .... 
+  */
 
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP); // what is this command doing with CS?! CHECK!
 
