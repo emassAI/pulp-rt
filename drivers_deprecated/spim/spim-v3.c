@@ -245,13 +245,19 @@ void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len,
 	qspi  /* '0' == 1-bit spi; '1' == 3-4 bits qspi */ \
 	);
 
-  printf("__rt_spim_send_bits_async():\ndata: %#010x\nlen : %d\nopcode : %#010x", data, len, cmd->cmd[2] );
+  printf("__rt_spim_send_bits_async():\ndata: %#010x\nlen : %d\nopcode : %#010x\n", data, len, cmd->cmd[2] );
   /*
-   SPI_CMD_SEND_CMD_ID : $2      %0010
-   data : $0044 = %0000 0000 0100 0100
-   bits :   $08 =                %1000
-   qspi :    $0 =                   %0
-   opcode : % .... .... .... .... 
+   data: 0x00000044
+   len : 8
+   opcode : $    2    0    0    7    0    0    4    4
+   opcode : % 0010 0000 0000 0111 0000 0000 0100 0100
+              SCMD QL.. .... size ---- value --------
+
+   SPI_CMD_SEND_CMD_ID (31-28) :    $2      %0010
+   Qspi                   (27) :    $0         %0
+   Lsb                    (26) :    $0         %0
+   size                (19-16) :   $08      %1000
+   value               (15-00) : $0044 %0100 0100
   */
 
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP); // what is this command doing with CS?! CHECK!
@@ -345,7 +351,11 @@ void __rt_spim_send_async(rt_spim_t *handle, void *data, size_t len, int qspi, r
 	SPI_CMD_MSB_FIRST          /* send the MOSI word starting from bit: 0 = MSB_FIRST, 1 = LSB_FIRST */ \
 	);
 
-  /* Todo: set ENDIANESS according conf->big_endian to as requested by the caller. Where? */
+  printf("__rt_spim_send_async(): opcode : %#010x\n", cmd->cmd[2] );
+
+  /* Todo: set ENDIANESS according conf->big_endian to as requested by the caller. Where? 
+     no bit 6 in config register ... see notes!
+  */
 
   cmd->cmd[3] = SPI_CMD_EOT(1, cs_mode == RT_SPIM_CS_KEEP); // what is this command doing with CS?! CHECK!
 
