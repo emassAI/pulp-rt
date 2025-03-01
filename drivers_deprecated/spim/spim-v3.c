@@ -217,7 +217,7 @@ void __rt_spim_send_bits_async(rt_spim_t *handle, unsigned int data, size_t len,
   data                : value masked 16 bit
 */
 
-	printf("__rt_spim_send_bits_async():\ndata (TO MASK!): %d\nlen : %d\n");
+	printf("__rt_spim_send_bits_async():\ndata (TO MASK!): %d\nlen : %d\n", data, len);
 
 }
 
